@@ -152,39 +152,52 @@
 		}
 	}
 
-	/* INI-dispatcher */
+	class _dispatcher{
+		private $base = '';
+		private $params = [];
+		function __construct($base = '',$params = []) {
+			$this->base = $base;
+			$this->params = $params;
+			$this->controller();
+		}
+		function controller(){
+			do {
+				/* Get the callback */
+				$controller = array_shift($this->params);
+				if ($controller == NULL) {$controller = 'index';}
+				$controllerPath = $this->base.str_replace('-','_',$controller).'.php';
+				if (!file_exists($controllerPath)) {
+					array_unshift($this->params,$controller);
+					$controller = 'index';
+					$controllerPath = $this->base.$controller.'.php';
+				}
+
+				include_once($controllerPath);
+				$controller = '_controller_'.$controller;
+				$controller = new $controller();
+
+				$command = $unshift = array_shift($this->params);
+				$command = str_replace('-','_',$command);
+				if ($command == NULL) {
+					$command = 'main';
+					break;
+				}
+
+				if (method_exists($controller,$command)) {break;}
+				if (isset($unshift)) {array_unshift($this->params,$unshift);}
+				$command = 'main';
+			} while(false);
+
+			$controller->$command(...$this->params);
+			echo $controller->_output;
+			exit;
+		}
+	}
+
 	chdir($_SERVER['DOCUMENT_ROOT'].'/resources/libs/');
-	$controllersBase = $_SERVER['DOCUMENT_ROOT'].'/resources/controllers/';
-	do {
-		$params = explode('/',$params);
-		$params = array_diff($params,['']);
+	$base = $_SERVER['DOCUMENT_ROOT'].'/resources/controllers/';
+	$params = explode('/',$params);
+	$params = array_diff($params,['']);
 
-		/* Get the callback */
-		$controller = array_shift($params);
-		if ($controller == NULL) {$controller = 'index';}
-		$controllerPath = $controllersBase.str_replace('-','_',$controller).'.php';
-		if (!file_exists($controllerPath)) {
-			array_unshift($params,$controller);
-			$controller = 'index';
-			$controllerPath = $controllersBase.$controller.'.php';
-		}
-
-		include_once($controllerPath);
-		$controller = '_controller_'.$controller;
-		$controller = new $controller();
-
-		$command = $unshift = array_shift($params);
-		$command = str_replace('-','_',$command);
-		if ($command == NULL) {
-			$command = 'main';
-			break;
-		}
-
-		if (method_exists($controller,$command)) {break;}
-		if (isset($unshift)) {array_unshift($params,$unshift);}
-		$command = 'main';
-	} while(false);
-
-	$controller->$command(...$params);
-	echo $controller->_output;
+	new _dispatcher($base,$params);
 	exit;
