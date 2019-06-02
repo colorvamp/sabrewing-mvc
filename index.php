@@ -131,7 +131,7 @@
 	class _controller{
 		public $_output = '';
 		public $_templates = [
-			 'path'=>'../views/'
+			 'path'=>'views/'
 			,'ext'=>'php'
 		];
 		public $output = []; /* Replacements for template */
