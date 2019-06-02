@@ -194,7 +194,7 @@
 		}
 	}
 
-	chdir($_SERVER['DOCUMENT_ROOT'].'/resources/libs/');
+	chdir($_SERVER['DOCUMENT_ROOT'].'/resources/');
 	$base = $_SERVER['DOCUMENT_ROOT'].'/resources/controllers/';
 	$params = explode('/',$params);
 	$params = array_diff($params,['']);
